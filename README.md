@@ -4,4 +4,5 @@
 
 感谢：
 https://github.com/wustor/CircleIndicatorView
+
 参考了他的一些想法，新加了水波纹动画
