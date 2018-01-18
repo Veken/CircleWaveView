@@ -28,7 +28,13 @@ public class CircleIndicatorView extends View {
     private Paint inPaint = new Paint();
     private Paint dashPaint = new Paint();
     private Paint middleTextPaint = new Paint();
-    private float sweepAngle = 240;//圆结束的弧度
+    private Paint paintCircle;
+
+    public void setSweepAngle(float sweepAngle) {
+        this.sweepAngle = sweepAngle;
+    }
+
+    private float sweepAngle = 270;//圆结束的弧度
     int mCenter = 0;
     int mRadius = 0;
 
@@ -77,23 +83,33 @@ public class CircleIndicatorView extends View {
      * 初始化画笔
      */
     public void initPaint() {
+        //外侧灰色弧度画笔
         outPaint.setColor(mGrayColor);
         outPaint.setAntiAlias(true);
         outPaint.setStyle(Paint.Style.STROKE);
-        outPaint.setStrokeWidth(5.0f);
+        outPaint.setStrokeWidth(8f);
+        //外侧白色实现弧度画笔
         inPaint.setAntiAlias(true);
         inPaint.setStyle(Paint.Style.STROKE);
-        inPaint.setStrokeWidth(5.0f);
-        dashPaint.setStyle(Paint.Style.STROKE);
-        dashPaint.setAntiAlias(true);
-        dashPaint.setColor(Color.WHITE);
-        dashPaint.setStrokeWidth(3);
-        setLayerType(View.LAYER_TYPE_SOFTWARE, dashPaint);
-        PathEffect effects = new DashPathEffect(new float[]{20, 6}, 0);
-        dashPaint.setPathEffect(effects);
+        inPaint.setStrokeWidth(12f);
+        //内虚线圆
+//        dashPaint.setStyle(Paint.Style.STROKE);
+//        dashPaint.setAntiAlias(true);
+//        dashPaint.setColor(Color.WHITE);
+//        dashPaint.setStrokeWidth(20);
+//        setLayerType(View.LAYER_TYPE_SOFTWARE, dashPaint);
+//        PathEffect effects = new DashPathEffect(new float[]{20, 6}, 0);
+//        dashPaint.setPathEffect(effects);
+        //中间文字画笔
         middleTextPaint = new Paint();
         middleTextPaint.setTextAlign(Paint.Align.CENTER);
         middleTextPaint.setAntiAlias(true);
+        //圆点画笔
+        paintCircle = new Paint();
+        paintCircle.setAntiAlias(true);
+        paintCircle.setColor(Color.WHITE);
+        paintCircle.setStrokeWidth(20);
+        paintCircle.setStyle(Paint.Style.FILL);
     }
 
 
@@ -104,20 +120,18 @@ public class CircleIndicatorView extends View {
         mRadius = getMeasuredHeight() / 2;
         RectF rectF = new RectF(mCenter - mRadius + getPaddingLeft(), mCenter - mRadius + getPaddingTop(), mCenter + mRadius - getPaddingRight(), mCenter + mRadius - getPaddingBottom());
         //内虚线圆
-        RectF dashedRectF = new RectF(mCenter - mRadius + 20 + getPaddingLeft(), mCenter - mRadius + 20 + getPaddingTop(), mCenter + mRadius - 20 - getPaddingRight(), mCenter + mRadius - 20 - getPaddingBottom());
-        float startAngle = 150;
-        canvas.drawArc(dashedRectF, startAngle, sweepAngle, false, dashPaint);
-
+//        RectF dashedRectF = new RectF(mCenter - mRadius + 20 + getPaddingLeft(), mCenter - mRadius + 20 + getPaddingTop(), mCenter + mRadius - 20 - getPaddingRight(), mCenter + mRadius - 20 - getPaddingBottom());
+        float startAngle = 90;
+//        canvas.drawArc(dashedRectF, startAngle, sweepAngle, false, dashPaint);
         //进度椭圆
-        canvas.drawArc(rectF, startAngle, getInSweepAngle(), false, inPaint);
+        canvas.drawArc(rectF, startAngle, inSweepAngle, false, inPaint);
         //外实线椭圆
         canvas.drawArc(rectF, startAngle, sweepAngle, false, outPaint);
         //中心数字
-        middleTextPaint.setColor(mWhiteColor);
+        middleTextPaint.setColor(Color.RED);
         middleTextPaint.setTextSize(mLargeSize);
         DecimalFormat decimalFormat = new DecimalFormat(".00");//构造方法的字符格式这里如果小数不足2位,会以0补足.
         String value = decimalFormat.format(indexValue);//format 返回的是字符串
-        Log.d("value---->", value);
         String[] split = value.split("\\.");
         String text = split[0];
         int mTextWidth = (int) middleTextPaint.measureText(text);
@@ -143,31 +157,33 @@ public class CircleIndicatorView extends View {
         textHeight = (int) (fontMetrics1.bottom - fontMetrics1.top);
         canvas.drawText("可用额度", getMeasuredWidth() / 2, getMeasuredHeight() / 2 + textHeight / 2 - fontMetrics1.bottom - 60, middleTextPaint);
 
-        //绘制发光的小圆点
-        Paint paintCircle = new Paint();
-        paintCircle.setStyle(Paint.Style.FILL);
-        paintCircle.setAntiAlias(true);//抗锯齿功能
+//        //绘制发光的小圆点
+//        Paint paintCircle = new Paint();
+//        paintCircle.setStyle(Paint.Style.FILL);
+//        paintCircle.setAntiAlias(true);//抗锯齿功能
         canvas.translate(getWidth() / 2, getHeight() / 2);//这时候的画布已经移动到了中心位置
-        canvas.rotate(getInSweepAngle() + 60);
-        Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.mipmap.iv_picture);
+        canvas.rotate(inSweepAngle);
+//        Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.mipmap.iv_picture);
         canvas.translate(0, getHeight() / 2 - getPaddingLeft());
 
-        // 获得图片的宽高
-        int width = bmp.getWidth();
-        int height = bmp.getHeight();
-        // 设置想要的大小
-        int newWidth = 30;
-        int newHeight = 30;
-        // 计算缩放比例
-        float scaleWidth = ((float) newWidth) / width;
-        float scaleHeight = ((float) newHeight) / height;
-        // 取得想要缩放的matrix参数
-        Matrix matrix = new Matrix();
-        matrix.postScale(scaleWidth, scaleHeight);
+//        // 获得图片的宽高
+//        int width = bmp.getWidth();
+//        int height = bmp.getHeight();
+//        // 设置想要的大小
+//        int newWidth = 60;
+//        int newHeight = 60;
+//        // 计算缩放比例
+//        float scaleWidth = ((float) newWidth) / width;
+//        float scaleHeight = ((float) newHeight) / height;
+//        // 取得想要缩放的matrix参数
+//        Matrix matrix = new Matrix();
+//        matrix.postScale(scaleWidth, scaleHeight);
         // 得到新的图片
-        Bitmap dotBitmap = Bitmap.createBitmap(bmp, 0, 0, width, height, matrix, true);
-        canvas.drawBitmap(dotBitmap, -15, -15, paintCircle);
-        canvas.rotate(-(getInSweepAngle() + 60));
+//        Bitmap dotBitmap = Bitmap.createBitmap(bmp, 0, 0, width, height, matrix, true);
+
+        canvas.drawCircle(0,0,15,paintCircle);
+//        canvas.drawBitmap(dotBitmap, -30, -30, paintCircle);
+//        canvas.rotate(startAngle);
     }
 
 
